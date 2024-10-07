@@ -1,26 +1,16 @@
-from flask import Flask, request, make_response, jsonify
-from flask_cors import CORS
-from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 
-from models import db, Message
+db = SQLAlchemy()
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = False
+class Message(db.Model, SerializerMixin):
+    __tablename__ = 'messages'
 
-CORS(app)
-migrate = Migrate(app, db)
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String)
+    username = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
-db.init_app(app)
-
-@app.route('/messages')
-def messages():
-    return ''
-
-@app.route('/messages/<int:id>')
-def messages_by_id(id):
-    return ''
-
-if __name__ == '__main__':
-    app.run(port=5555)
+    def __repr__(self):
+        return f'<Message by {self.username}: {self.body[:10]}...>'
